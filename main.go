@@ -297,7 +297,7 @@ func getRelevantLawsHandler(c *gin.Context) {
 	})
 }
 func getHistoryHandler(c *gin.Context) {
-	coll := db.GetCollecti  on("analyses")
+	coll := db.GetCollection("analyses")
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
