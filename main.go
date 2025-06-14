@@ -2,18 +2,21 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
+	"github.com/ledongthuc/pdf"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo/options"
 	"io"
+	"legally/db"
 	"log"
 	"net/http"
 	"os"
 	"strings"
 	"time"
-
-	"github.com/gin-gonic/gin"
-	"github.com/joho/godotenv"
-	"github.com/ledongthuc/pdf"
 )
 
 const (
@@ -23,7 +26,7 @@ const (
 
 func main() {
 	_ = godotenv.Load()
-
+	db.InitMongo()
 	// Создаем временную папку, если ее нет
 	if err := os.MkdirAll("./temp", os.ModePerm); err != nil {
 		log.Fatal("Не удалось создать временную папку:", err)
@@ -36,6 +39,7 @@ func main() {
 	})
 	router.POST("/api/analyze", analyzeDocumentHandler)
 	router.GET("/api/laws", getRelevantLawsHandler)
+	router.GET("/api/history", getHistoryHandler)
 
 	// Добавляем middleware для логирования запросов
 	router.Use(func(c *gin.Context) {
@@ -103,6 +107,17 @@ func analyzeDocumentHandler(c *gin.Context) {
 
 	log.Println("✅ Полный анализ готов, отправляем ответ клиенту")
 	log.Printf("ℹ️ Тип документа: %s, длина анализа: %d символов", docType, len(fullAnalysis))
+
+	_, err = db.GetCollection("analyses").InsertOne(context.TODO(), bson.M{
+		"filename":   file.Filename,
+		"type":       docType,
+		"analysis":   fullAnalysis,
+		"text":       text,
+		"created_at": time.Now(),
+	})
+	if err != nil {
+		log.Println("❌ Ошибка сохранения в Mongo:", err)
+	}
 
 	c.JSON(http.StatusOK, gin.H{
 		"analysis":      fullAnalysis,
@@ -280,4 +295,25 @@ func getRelevantLawsHandler(c *gin.Context) {
 			{"name": "Кодекс об административных правонарушениях РК", "url": "https://adilet.zan.kz/rus/docs/K1400000233"},
 		},
 	})
+}
+func getHistoryHandler(c *gin.Context) {
+	coll := db.GetCollecti  on("analyses")
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	cursor, err := coll.Find(ctx, bson.M{}, options.Find().SetSort(bson.D{{"created_at", -1}}))
+	if err != nil {
+		log.Println("❌ Ошибка чтения из Mongo:", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Ошибка получения истории"})
+		return
+	}
+	defer cursor.Close(ctx)
+
+	var results []bson.M
+	if err := cursor.All(ctx, &results); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Ошибка чтения данных"})
+		return
+	}
+
+	c.JSON(http.StatusOK, results)
 }

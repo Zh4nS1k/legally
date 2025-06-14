@@ -338,3 +338,56 @@ footer {
         max-height: 400px;
     }
 }
+/* История анализов */
+#historySection {
+    margin-top: 2rem;
+}
+
+.history-card {
+    background: var(--card-bg);
+    border-left: 4px solid var(--primary-color);
+    padding: 1.2rem 1.5rem;
+    margin-bottom: 1.2rem;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    transition: box-shadow 0.3s, transform 0.2s;
+    cursor: pointer;
+}
+
+.history-card:hover {
+    box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+    transform: translateY(-2px);
+}
+
+.history-card h4 {
+    margin-bottom: 0.5rem;
+    color: var(--primary-color);
+    font-size: 1.2rem;
+}
+
+.history-card p {
+    font-size: 0.95rem;
+    color: #555;
+    margin-bottom: 0.3rem;
+}
+
+.history-meta {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.85rem;
+    color: #888;
+    margin-top: 0.5rem;
+    flex-wrap: wrap;
+}
+.tab.active {
+    border-bottom: 2px solid #000;
+    font-weight: bold;
+}
+.upload-section {
+    text-align: center;
+}
+.result-section h2,
+.result-section p,
+#historySection h2 {
+    text-align: center;
+}

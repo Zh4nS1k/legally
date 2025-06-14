@@ -9,19 +9,24 @@
 </head>
 <body>
 <header>
-    <div class="container">
+    <div>
         <h1>Legally</h1>
         <p class="subtitle">Проверка юридических документов на соответствие законодательству Казахстана</p>
     </div>
 </header>
+
+
 
 <main class="container">
     <section class="upload-section">
         <h2>Проверить документ</h2>
         <p>Загрузите договор или другой юридический документ для анализа на соответствие законодательству РК</p>
 
-        <input type="file" id="documentInput" class="file-input" accept=".pdf" style="display:none;">
-        <button class="upload-btn" id="uploadBtn">Загрузить документ</button>
+        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+            <input type="file" id="documentInput" class="file-input" accept=".pdf" style="display:none;">
+            <button class="upload-btn" id="uploadBtn">Загрузить документ</button>
+            <button class="upload-btn" id="historyBtn">📜 История анализов</button>
+        </div>
 
         <div id="fileInfo" class="file-info"></div>
         <div id="emptyState" class="empty-state">Пожалуйста, загрузите документ для анализа.</div>
@@ -59,6 +64,12 @@
         <div id="summaryTab" class="tab-content">
             <div id="summaryContainer" class="analysis-container"></div>
         </div>
+    </section>
+
+    <!-- 🔽 Новая секция истории -->
+    <section id="historySection" class="result-section" style="display: none;">
+        <h2>История анализов</h2>
+        <div id="historyContainer" class="analysis-container"></div>
     </section>
 </main>
 
