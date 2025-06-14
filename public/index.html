@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Legally - Проверка документов</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/github.min.css">
+</head>
+<body>
+<header>
+    <div class="container">
+        <h1>Legally</h1>
+        <p class="subtitle">Проверка юридических документов на соответствие законодательству Казахстана</p>
+    </div>
+</header>
+
+<main class="container">
+    <section class="upload-section">
+        <h2>Проверить документ</h2>
+        <p>Загрузите договор или другой юридический документ для анализа на соответствие законодательству РК</p>
+
+        <input type="file" id="documentInput" class="file-input" accept=".pdf" style="display:none;">
+        <button class="upload-btn" id="uploadBtn">Загрузить документ</button>
+
+        <div id="fileInfo" class="file-info"></div>
+        <div id="emptyState" class="empty-state">Пожалуйста, загрузите документ для анализа.</div>
+        <div id="errorState" class="error-state" style="display:none;"></div>
+    </section>
+
+    <section id="loadingSection" class="loading-section" style="display: none;">
+        <div class="spinner"></div>
+        <p>Анализируем документ. Это может занять несколько минут...</p>
+    </section>
+
+    <section id="resultSection" class="result-section" style="display:none;">
+        <h2>Результаты анализа</h2>
+        <p id="documentType" class="document-type"></p>
+
+        <div class="tab-container">
+            <div class="tab active" data-tab="full">Полный анализ</div>
+            <div class="tab" data-tab="risks">Риски</div>
+            <div class="tab" data-tab="recommendations">Рекомендации</div>
+            <div class="tab" data-tab="summary">Сводка</div>
+        </div>
+
+        <div id="fullTab" class="tab-content active">
+            <div id="fullContainer" class="analysis-container"></div>
+        </div>
+
+        <div id="risksTab" class="tab-content">
+            <div id="risksContainer" class="analysis-container"></div>
+        </div>
+
+        <div id="recommendationsTab" class="tab-content">
+            <div id="recommendationsContainer" class="analysis-container"></div>
+        </div>
+
+        <div id="summaryTab" class="tab-content">
+            <div id="summaryContainer" class="analysis-container"></div>
+        </div>
+    </section>
+</main>
+
+<footer>
+    <div class="container">
+        <p>© 2025 Legally. Все права защищены.</p>
+        <p>Информация предоставляется исключительно в ознакомительных целях.</p>
+    </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>
+<script src="/static/js/main.js"></script>
+</body>
+</html>
