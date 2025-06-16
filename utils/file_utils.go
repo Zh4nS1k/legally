@@ -16,9 +16,9 @@ import (
 const (
 	maxFileSize    = 10 << 20 // 10MB
 	tempFilePrefix = "temp_"
+	pdfTimeout     = 30 * time.Second
 )
 
-// ProcessUploadedFile обрабатывает загруженный файл и извлекает текст
 func ProcessUploadedFile(c *gin.Context) (string, string, error) {
 	LogAction("Начало обработки загруженного файла")
 
@@ -29,7 +29,6 @@ func ProcessUploadedFile(c *gin.Context) (string, string, error) {
 		return "", "", fmt.Errorf("размер файла не должен превышать 10MB")
 	}
 
-	// Получение файла из запроса
 	file, header, err := c.Request.FormFile("document")
 	if err != nil {
 		LogError(fmt.Sprintf("Ошибка получения файла: %v", err))
@@ -37,14 +36,12 @@ func ProcessUploadedFile(c *gin.Context) (string, string, error) {
 	}
 	defer file.Close()
 
-	// Проверка расширения файла
 	ext := strings.ToLower(filepath.Ext(header.Filename))
 	if ext != ".pdf" {
 		LogError(fmt.Sprintf("Неподдерживаемый формат файла: %s", ext))
 		return "", "", fmt.Errorf("поддерживаются только PDF файлы")
 	}
 
-	// Создание временного файла
 	tempPath := filepath.Join("./temp", tempFilePrefix+fmt.Sprintf("%d_%s", time.Now().Unix(), header.Filename))
 	LogInfo(fmt.Sprintf("Создание временного файла: %s", tempPath))
 
@@ -55,24 +52,18 @@ func ProcessUploadedFile(c *gin.Context) (string, string, error) {
 	}
 	defer tempFile.Close()
 
-	// Копирование содержимого во временный файл
 	if _, err := io.Copy(tempFile, file); err != nil {
 		LogError(fmt.Sprintf("Ошибка сохранения файла: %v", err))
 		return "", "", fmt.Errorf("ошибка сохранения файла")
 	}
 
-	// Удаление временного файла после завершения
 	defer func() {
 		if err := os.Remove(tempPath); err != nil {
 			LogWarning(fmt.Sprintf("Не удалось удалить временный файл: %v", err))
-		} else {
-			LogInfo(fmt.Sprintf("Временный файл удален: %s", tempPath))
 		}
 	}()
 
-	// Извлечение текста из PDF
-	LogInfo(fmt.Sprintf("Извлечение текста из файла: %s", tempPath))
-	text, err := ExtractTextFromPDF(tempPath)
+	text, err := SafeExtractTextFromPDF(tempPath, pdfTimeout)
 	if err != nil {
 		LogError(fmt.Sprintf("Ошибка извлечения текста: %v", err))
 		return "", "", fmt.Errorf("ошибка извлечения текста: %v", err)
@@ -87,7 +78,29 @@ func ProcessUploadedFile(c *gin.Context) (string, string, error) {
 	return text, header.Filename, nil
 }
 
-// ExtractTextFromPDF извлекает текст из PDF файла
+func SafeExtractTextFromPDF(path string, timeout time.Duration) (string, error) {
+	result := make(chan string)
+	errChan := make(chan error)
+
+	go func() {
+		text, err := ExtractTextFromPDF(path)
+		if err != nil {
+			errChan <- err
+			return
+		}
+		result <- text
+	}()
+
+	select {
+	case text := <-result:
+		return text, nil
+	case err := <-errChan:
+		return "", err
+	case <-time.After(timeout):
+		return "", fmt.Errorf("таймаут извлечения текста (%v)", timeout)
+	}
+}
+
 func ExtractTextFromPDF(path string) (string, error) {
 	LogAction(fmt.Sprintf("Извлечение текста из PDF: %s", path))
 
@@ -112,14 +125,11 @@ func ExtractTextFromPDF(path string) (string, error) {
 		return "", fmt.Errorf("файл пуст")
 	}
 
-	// Нормализация пробелов
 	text = strings.Join(strings.Fields(text), " ")
 	LogInfo(fmt.Sprintf("Извлечено %d символов из PDF", len(text)))
-
 	return text, nil
 }
 
-// SplitText разделяет текст на части по максимальному количеству символов
 func SplitText(text string, maxChars int) []string {
 	LogAction(fmt.Sprintf("Разделение текста (макс. %d символов на часть)", maxChars))
 

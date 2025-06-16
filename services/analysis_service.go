@@ -17,7 +17,6 @@ import (
 const (
 	model       = "deepseek/deepseek-r1-0528:free"
 	apiEndpoint = "https://openrouter.ai/api/v1/chat/completions"
-	maxFileSize = 10 << 20 // 10MB
 )
 
 type HttpError struct {

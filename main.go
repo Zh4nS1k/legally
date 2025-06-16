@@ -1,16 +1,22 @@
 package main
 
 import (
+	"context"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 	"legally/api"
 	"legally/db"
 	"log"
+	"net/http"
 	"os"
+	"os/signal"
+	"syscall"
+	"time"
 )
 
 func main() {
 	_ = godotenv.Load()
+	checkEnvVars()
 	db.InitMongo()
 
 	if err := os.MkdirAll("./temp", os.ModePerm); err != nil {
@@ -25,8 +31,37 @@ func main() {
 		port = "8080"
 	}
 
-	log.Printf("✅ SUCCESS: Сервер запущен на http://localhost:%s", port)
-	if err := router.Run(":" + port); err != nil {
-		log.Fatal("❌ ERROR: Ошибка при запуске сервера:", err)
+	srv := &http.Server{
+		Addr:    ":" + port,
+		Handler: router,
+	}
+
+	go func() {
+		log.Printf("✅ Сервер запущен на http://localhost:%s", port)
+		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			log.Fatalf("❌ Ошибка сервера: %v", err)
+		}
+	}()
+
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	<-quit
+	log.Println("🔄 Завершение работы сервера...")
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	if err := srv.Shutdown(ctx); err != nil {
+		log.Fatal("❌ Принудительное завершение работы:", err)
+	}
+
+	log.Println("✅ Сервер успешно остановлен")
+}
+
+func checkEnvVars() {
+	required := []string{"MONGO_URI", "OPENROUTER_API_KEY"}
+	for _, env := range required {
+		if os.Getenv(env) == "" {
+			log.Fatalf("❌ ERROR: Необходимо установить переменную окружения %s", env)
+		}
 	}
 }

@@ -31,6 +31,12 @@ func InitMongo() {
 	log.Println("✅ MongoDB подключена")
 }
 
+func Ping() error {
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	defer cancel()
+	return MongoClient.Ping(ctx, nil)
+}
+
 func GetCollection(name string) *mongo.Collection {
 	return MongoClient.Database("legally").Collection(name)
 }
