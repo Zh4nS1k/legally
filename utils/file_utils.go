@@ -50,28 +50,30 @@ func ProcessUploadedFile(c *gin.Context) (string, string, error) {
 		LogError(fmt.Sprintf("Ошибка создания временного файла: %v", err))
 		return "", "", fmt.Errorf("ошибка создания временного файла")
 	}
-	defer tempFile.Close()
 
 	if _, err := io.Copy(tempFile, file); err != nil {
+		tempFile.Close()
 		LogError(fmt.Sprintf("Ошибка сохранения файла: %v", err))
 		return "", "", fmt.Errorf("ошибка сохранения файла")
 	}
-
-	defer func() {
-		if err := os.Remove(tempPath); err != nil {
-			LogWarning(fmt.Sprintf("Не удалось удалить временный файл: %v", err))
-		}
-	}()
+	tempFile.Close()
 
 	text, err := SafeExtractTextFromPDF(tempPath, pdfTimeout)
 	if err != nil {
+		os.Remove(tempPath)
 		LogError(fmt.Sprintf("Ошибка извлечения текста: %v", err))
 		return "", "", fmt.Errorf("ошибка извлечения текста: %v", err)
 	}
 
 	if len(text) == 0 {
+		os.Remove(tempPath)
 		LogWarning("Документ не содержит текста")
 		return "", "", fmt.Errorf("документ не содержит текста")
+	}
+
+	// Удаляем временный файл после успешной обработки
+	if err := os.Remove(tempPath); err != nil {
+		LogWarning(fmt.Sprintf("Не удалось удалить временный файл: %v", err))
 	}
 
 	LogSuccess(fmt.Sprintf("Успешно обработан файл: %s (символов: %d)", header.Filename, len(text)))
