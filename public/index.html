@@ -15,14 +15,13 @@
     </div>
 </header>
 
-
-
 <main class="container">
     <section class="upload-section">
         <h2>Проверить документ</h2>
         <p>Загрузите договор или другой юридический документ для анализа на соответствие законодательству РК</p>
 
-        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+        <!-- КНОПКИ: добавлено justify-content: center -->
+        <div style="display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;">
             <input type="file" id="documentInput" class="file-input" accept=".pdf" style="display:none;">
             <button class="upload-btn" id="uploadBtn">Загрузить документ</button>
             <button class="upload-btn" id="historyBtn">📜 История анализов</button>

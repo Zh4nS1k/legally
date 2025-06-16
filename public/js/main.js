@@ -200,4 +200,4 @@ function switchTab(e) {
     const tabName = e.target.dataset.tab;
     document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
     document.getElementById(`${tabName}Tab`).classList.add('active');
-}
+}   
