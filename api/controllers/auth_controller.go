@@ -12,14 +12,10 @@ type AuthRequest struct {
 	Password string `json:"password" binding:"required,min=8"`
 }
 
-// @Summary Регистрация
-// @Description Регистрация нового пользователя
-// @Tags Аутентификация
-// @Accept json
-// @Produce json
-// @Param input body AuthRequest true "Данные для регистрации"
-// @Success 200 {object} gin.H "Сообщение об успехе"
-// @Router /api/register [post]
+type RefreshRequest struct {
+	RefreshToken string `json:"refreshToken" binding:"required"`
+}
+
 func Register(c *gin.Context) {
 	var req AuthRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -27,26 +23,23 @@ func Register(c *gin.Context) {
 		return
 	}
 
-	_, err := services.Register(req.Email, req.Password, models.RoleUser)
+	tokens, err := services.Register(req.Email, req.Password, models.RoleUser)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		status := http.StatusBadRequest
+		if err == services.ErrUserExists {
+			status = http.StatusConflict
+		}
+		c.JSON(status, gin.H{"error": err.Error()})
 		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"message": "Регистрация прошла успешно",
-		"success": true,
+		"message":      "Регистрация прошла успешно",
+		"accessToken":  tokens["accessToken"],
+		"refreshToken": tokens["refreshToken"],
 	})
 }
 
-// @Summary Логин
-// @Description Аутентификация пользователя
-// @Tags Аутентификация
-// @Accept json
-// @Produce json
-// @Param input body AuthRequest true "Данные для входа"
-// @Success 200 {object} gin.H "Токен и сообщение"
-// @Router /api/login [post]
 func Login(c *gin.Context) {
 	var req AuthRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -54,18 +47,64 @@ func Login(c *gin.Context) {
 		return
 	}
 
-	token, err := services.Login(req.Email, req.Password)
+	tokens, err := services.Login(req.Email, req.Password)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{
-			"error":   "Неверные учетные данные",
+			"error":   err.Error(),
 			"success": false,
 		})
 		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"token":   token,
-		"message": "Вход выполнен успешно",
+		"message":      "Вход выполнен успешно",
+		"accessToken":  tokens["accessToken"],
+		"refreshToken": tokens["refreshToken"],
+		"success":      true,
+	})
+}
+
+func Refresh(c *gin.Context) {
+	var req RefreshRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	tokens, err := services.RefreshTokens(req.RefreshToken)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"error":   err.Error(),
+			"success": false,
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"accessToken":  tokens["accessToken"],
+		"refreshToken": tokens["refreshToken"],
+		"success":      true,
+	})
+}
+
+func ValidateToken(c *gin.Context) {
+	token := c.GetHeader("Authorization")
+	if token == "" {
+		c.JSON(http.StatusUnauthorized, gin.H{"valid": false})
+		return
+	}
+
+	// Проверка токена происходит в middleware
+	c.JSON(http.StatusOK, gin.H{
+		"valid":   true,
+		"message": "Токен действителен",
+	})
+}
+
+func Logout(c *gin.Context) {
+	// В реальном приложении здесь можно добавить токен в blacklist
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Выход выполнен успешно",
 		"success": true,
 	})
 }

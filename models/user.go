@@ -3,6 +3,7 @@ package models
 import (
 	"errors"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"time"
 )
 
 type UserRole string
@@ -19,8 +20,10 @@ const (
 )
 
 type User struct {
-	ID       primitive.ObjectID `bson:"_id,omitempty" json:"id"`
-	Email    string             `bson:"email" json:"email"`
-	Password string             `bson:"password" json:"-"`
-	Role     UserRole           `bson:"role" json:"role"`
+	ID        primitive.ObjectID `bson:"_id,omitempty"`
+	Email     string             `bson:"email"`
+	Password  string             `bson:"password"`
+	Role      UserRole           `bson:"role"`
+	CreatedAt time.Time          `bson:"createdAt"`
+	UpdatedAt time.Time          `bson:"updatedAt"`
 }
