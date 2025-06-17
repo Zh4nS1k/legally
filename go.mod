@@ -4,7 +4,7 @@ go 1.24.3
 
 require (
 	github.com/gin-gonic/gin v1.10.1
-	github.com/gorilla/websocket v1.5.3
+	github.com/golang-jwt/jwt/v5 v5.2.2
 	github.com/joho/godotenv v1.5.1
 	github.com/ledongthuc/pdf v0.0.0-20250511090121-5959a4027728
 	go.mongodb.org/mongo-driver v1.17.4
