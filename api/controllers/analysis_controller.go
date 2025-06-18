@@ -10,7 +10,7 @@ import (
 	"legally/services"
 )
 
-func AnalyzeDocumen(c *gin.Context) {
+func AnalyzeDocument(c *gin.Context) {
 	// Get file from request
 	file, err := c.FormFile("document")
 	if err != nil {
