@@ -22,7 +22,7 @@ const (
 func ProcessUploadedFile(c *gin.Context) (string, string, error) {
 	LogAction("Начало обработки загруженного файла")
 
-	// Проверка размера файла
+	// Ensure we don't process files that are too large
 	c.Request.Body = http.MaxBytesReader(c.Writer, c.Request.Body, maxFileSize)
 	if err := c.Request.ParseMultipartForm(maxFileSize); err != nil {
 		LogError(fmt.Sprintf("Превышен максимальный размер файла (10MB): %v", err))
@@ -36,12 +36,14 @@ func ProcessUploadedFile(c *gin.Context) (string, string, error) {
 	}
 	defer file.Close()
 
+	// Validate file extension
 	ext := strings.ToLower(filepath.Ext(header.Filename))
 	if ext != ".pdf" {
 		LogError(fmt.Sprintf("Неподдерживаемый формат файла: %s", ext))
 		return "", "", fmt.Errorf("поддерживаются только PDF файлы")
 	}
 
+	// Create temp file
 	tempPath := filepath.Join("./temp", tempFilePrefix+fmt.Sprintf("%d_%s", time.Now().Unix(), header.Filename))
 	LogInfo(fmt.Sprintf("Создание временного файла: %s", tempPath))
 
@@ -51,6 +53,7 @@ func ProcessUploadedFile(c *gin.Context) (string, string, error) {
 		return "", "", fmt.Errorf("ошибка создания временного файла")
 	}
 
+	// Copy file contents
 	if _, err := io.Copy(tempFile, file); err != nil {
 		tempFile.Close()
 		LogError(fmt.Sprintf("Ошибка сохранения файла: %v", err))
@@ -58,6 +61,7 @@ func ProcessUploadedFile(c *gin.Context) (string, string, error) {
 	}
 	tempFile.Close()
 
+	// Extract text from PDF
 	text, err := SafeExtractTextFromPDF(tempPath, pdfTimeout)
 	if err != nil {
 		os.Remove(tempPath)
@@ -71,7 +75,7 @@ func ProcessUploadedFile(c *gin.Context) (string, string, error) {
 		return "", "", fmt.Errorf("документ не содержит текста")
 	}
 
-	// Удаляем временный файл после успешной обработки
+	// Clean up temp file
 	if err := os.Remove(tempPath); err != nil {
 		LogWarning(fmt.Sprintf("Не удалось удалить временный файл: %v", err))
 	}

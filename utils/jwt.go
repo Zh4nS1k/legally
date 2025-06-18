@@ -19,8 +19,8 @@ type Claims struct {
 }
 
 func GenerateTokenPair(userID string, role models.UserRole) (string, string, error) {
-	// Access Token (15 минут)
-	accessToken, err := generateToken(userID, role, 15*time.Minute, jwtSecret)
+	// Access Token (1 час	)
+	accessToken, err := generateToken(userID, role, 1*time.Hour, jwtSecret)
 	if err != nil {
 		return "", "", err
 	}

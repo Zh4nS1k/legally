@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"legally/models"
 	"legally/utils"
@@ -32,6 +33,7 @@ func AuthRequired(requiredRole models.UserRole) gin.HandlerFunc {
 		token := tokenParts[1]
 		claims, err := utils.ParseToken(token)
 		if err != nil {
+			utils.LogError(fmt.Sprintf("Ошибка токена: %v", err))
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
 				"error":   "Неверный или истекший токен",
 				"code":    "INVALID_OR_EXPIRED_TOKEN",

@@ -8,7 +8,6 @@ import (
 	"io"
 	"legally/repositories"
 	"legally/utils"
-	"mime/multipart"
 	"net/http"
 	"os"
 	"strings"
@@ -234,25 +233,4 @@ func detectDocumentType(text string) string {
 	default:
 		return "Неизвестно"
 	}
-}
-
-type AnalysisResult struct {
-	Analysis   string
-	DocumentID string
-}
-
-type ServiceError struct {
-	Status  int
-	Message string
-	Code    string
-}
-
-func AnalyzePDFDocument(file *multipart.FileHeader, userID string) (*AnalysisResult, *ServiceError) {
-	// Implement actual PDF processing
-	// Return either result or error
-
-	return &AnalysisResult{
-		Analysis:   "Результат анализа...",
-		DocumentID: "generated-id-here",
-	}, nil
 }
