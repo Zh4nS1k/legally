@@ -1,3 +1,5 @@
+// routes.go
+
 package api
 
 import (
@@ -41,7 +43,7 @@ func SetupRoutes(router *gin.Engine) {
 	private := router.Group("/api")
 	private.Use(middleware.AuthRequired(models.RoleUser))
 	{
-		private.POST("/analyze", controllers.AnalyzeDocument)
+		private.POST("/analyze", controllers.AnalyzeDocumen)
 		private.GET("/history", controllers.GetHistory)
 		private.POST("/logout", controllers.Logout) // Новый эндпоинт
 	}

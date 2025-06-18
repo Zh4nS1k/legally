@@ -1,3 +1,5 @@
+// analysis_controller.go
+
 package controllers
 
 import (
@@ -8,7 +10,7 @@ import (
 	"legally/services"
 )
 
-func AnalyzeDocument(c *gin.Context) {
+func AnalyzeDocumen(c *gin.Context) {
 	// Get file from request
 	file, err := c.FormFile("document")
 	if err != nil {

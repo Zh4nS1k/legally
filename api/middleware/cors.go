@@ -1,3 +1,5 @@
+// cors.go
+
 package middleware
 
 import (

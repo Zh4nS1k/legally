@@ -1,3 +1,5 @@
+// user.go
+
 package models
 
 import (
