@@ -43,7 +43,8 @@ func AnalyzeDocument(c *gin.Context) (interface{}, *HttpError) {
 		return nil, &HttpError{Status: http.StatusInternalServerError, Message: err.Error()}
 	}
 
-	err = repositories.SaveAnalysis(filename, docType, analysis, text)
+	userID, _ := c.Get("userId")
+	err = repositories.SaveAnalysis(userID.(string), filename, docType, analysis, text)
 	if err != nil {
 		utils.LogWarning(fmt.Sprintf("Ошибка сохранения в MongoDB: %v", err))
 	}
@@ -215,8 +216,8 @@ func GetRelevantLaws() []map[string]string {
 	}
 }
 
-func GetHistory() ([]map[string]interface{}, error) {
-	return repositories.GetHistory()
+func GetUserHistory(userID string) ([]map[string]interface{}, error) {
+	return repositories.GetUserHistory(userID)
 }
 
 func detectDocumentType(text string) string {

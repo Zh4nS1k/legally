@@ -3,6 +3,8 @@
 package controllers
 
 import (
+	"fmt"
+	"legally/utils"
 	"net/http"
 	"strings"
 
@@ -81,10 +83,24 @@ func GetRelevantLaws(c *gin.Context) {
 }
 
 func GetHistory(c *gin.Context) {
-	history, err := services.GetHistory()
+	utils.LogAction("Получение запроса на историю проверок")
+
+	userID, exists := c.Get("userId")
+	if !exists {
+		utils.LogError("Попытка доступа к истории без авторизации")
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Authentication required"})
+		return
+	}
+
+	utils.LogInfo(fmt.Sprintf("Запрос истории для пользователя: %s", userID))
+
+	history, err := services.GetUserHistory(userID.(string))
 	if err != nil {
+		utils.LogError(fmt.Sprintf("Ошибка получения истории: %v", err))
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Ошибка получения истории"})
 		return
 	}
+
+	utils.LogSuccess(fmt.Sprintf("Успешно возвращено %d записей истории", len(history)))
 	c.JSON(http.StatusOK, history)
 }
