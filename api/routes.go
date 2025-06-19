@@ -39,13 +39,13 @@ func SetupRoutes(router *gin.Engine) {
 		public.GET("/laws", controllers.GetRelevantLaws)
 	}
 
-	// Приватные маршруты (авторизованные пользователи)
 	private := router.Group("/api")
 	private.Use(middleware.AuthRequired(models.RoleUser))
 	{
 		private.POST("/analyze", controllers.AnalyzeDocument)
 		private.GET("/history", controllers.GetHistory)
-		private.POST("/logout", controllers.Logout) // Новый эндпоинт
+		private.POST("/logout", controllers.Logout)
+		private.GET("/user", controllers.GetUser)
 	}
 
 	// Админские маршруты
