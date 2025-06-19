@@ -7,12 +7,14 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"golang.org/x/net/context"
 	"io"
 	"legally/repositories"
 	"legally/utils"
 	"net/http"
 	"os"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -236,4 +238,63 @@ func detectDocumentType(text string) string {
 	default:
 		return "Неизвестно"
 	}
+}
+
+var (
+	userCache      = make(map[string]string)
+	activeAnalysis = make(map[string]context.CancelFunc)
+	cacheMutex     sync.Mutex
+)
+
+func CancelUserAnalysis(userID string) error {
+	cacheMutex.Lock()
+	defer cacheMutex.Unlock()
+
+	if cancel, exists := activeAnalysis[userID]; exists {
+		cancel()
+		delete(activeAnalysis, userID)
+		delete(userCache, userID)
+		return nil
+	}
+	return fmt.Errorf("анализ не найден или уже завершен")
+}
+
+func ClearUserCache(userID string) error {
+	cacheMutex.Lock()
+	defer cacheMutex.Unlock()
+
+	delete(userCache, userID)
+	return nil
+}
+
+func CacheUserFile(userID, content string) {
+	cacheMutex.Lock()
+	defer cacheMutex.Unlock()
+
+	userCache[userID] = content
+}
+
+func GetCachedFile(userID string) (string, bool) {
+	cacheMutex.Lock()
+	defer cacheMutex.Unlock()
+
+	content, exists := userCache[userID]
+	return content, exists
+}
+
+func StartAnalysis(ctx context.Context, userID string, fn func()) context.Context {
+	cacheMutex.Lock()
+	defer cacheMutex.Unlock()
+
+	ctx, cancel := context.WithCancel(ctx)
+	activeAnalysis[userID] = cancel
+
+	go func() {
+		fn()
+		cacheMutex.Lock()
+		delete(activeAnalysis, userID)
+		cacheMutex.Unlock()
+	}()
+
+	return ctx
 }

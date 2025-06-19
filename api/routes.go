@@ -46,6 +46,8 @@ func SetupRoutes(router *gin.Engine) {
 		private.GET("/history", controllers.GetHistory)
 		private.POST("/logout", controllers.Logout)
 		private.GET("/user", controllers.GetUser)
+		private.POST("/analysis/cancel", controllers.CancelAnalysis)
+		private.POST("/cache/clear", controllers.ClearFileCache)
 	}
 
 	// Админские маршруты

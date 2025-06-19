@@ -4,12 +4,11 @@ package controllers
 
 import (
 	"fmt"
+	"github.com/gin-gonic/gin"
+	"legally/services"
 	"legally/utils"
 	"net/http"
 	"strings"
-
-	"github.com/gin-gonic/gin"
-	"legally/services"
 )
 
 func AnalyzeDocument(c *gin.Context) {
@@ -103,4 +102,43 @@ func GetHistory(c *gin.Context) {
 
 	utils.LogSuccess(fmt.Sprintf("Успешно возвращено %d записей истории", len(history)))
 	c.JSON(http.StatusOK, history)
+}
+
+func CancelAnalysis(c *gin.Context) {
+	userID, exists := c.Get("userId")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Authentication required"})
+		return
+	}
+
+	// Отменяем анализ для данного пользователя
+	err := services.CancelUserAnalysis(userID.(string))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"message": "Анализ успешно отменен",
+	})
+}
+
+func ClearFileCache(c *gin.Context) {
+	userID, exists := c.Get("userId")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Authentication required"})
+		return
+	}
+
+	err := services.ClearUserCache(userID.(string))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Ошибка очистки кэша"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"message": "Файл удален из кэша",
+	})
 }
