@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Legally Admin - RAG Management</title>
+    <link rel="stylesheet" href="/static/css/style.css" />
+    <link rel="stylesheet" href="/static/css/admin.css" />
+  </head>
+  <body>
+    <header>
+      <div>
+        <h1>Legally Admin</h1>
+        <p class="subtitle">Управление RAG документами</p>
+      </div>
+    </header>
+
+    <main class="container">
+      <!-- Upload Section -->
+      <section class="admin-section">
+        <h2>Загрузка нового документа</h2>
+        <form id="uploadForm" class="admin-form">
+          <div class="form-group">
+            <label for="title">Название документа *</label>
+            <input type="text" id="title" name="title" required />
+          </div>
+
+          <div class="form-group">
+            <label for="category">Категория *</label>
+            <select id="category" name="category" required>
+              <option value="">Выберите категорию</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="source">Источник</label>
+            <input
+              type="text"
+              id="source"
+              name="source"
+              placeholder="Например: Гражданский кодекс РК"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="document">Документ (PDF) *</label>
+            <input
+              type="file"
+              id="document"
+              name="document"
+              accept=".pdf"
+              required
+            />
+          </div>
+
+          <button type="submit" class="admin-btn">Загрузить документ</button>
+        </form>
+      </section>
+
+      <!-- Search Section -->
+      <section class="admin-section">
+        <h2>Поиск документов</h2>
+        <form id="searchForm" class="admin-form">
+          <div class="form-group">
+            <label for="searchQuery">Поисковый запрос</label>
+            <input
+              type="text"
+              id="searchQuery"
+              name="query"
+              placeholder="Введите поисковый запрос"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="searchCategory">Категория</label>
+            <select id="searchCategory" name="category">
+              <option value="">Все категории</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="searchLimit">Лимит результатов</label>
+            <input
+              type="number"
+              id="searchLimit"
+              name="limit"
+              value="10"
+              min="1"
+              max="50"
+            />
+          </div>
+
+          <button type="submit" class="admin-btn">Поиск</button>
+        </form>
+
+        <div id="searchResults" class="results-container"></div>
+      </section>
+
+      <!-- Documents List -->
+      <section class="admin-section">
+        <h2>Список документов</h2>
+        <div class="controls">
+          <select id="filterCategory">
+            <option value="">Все категории</option>
+          </select>
+          <button id="refreshBtn" class="admin-btn">Обновить</button>
+        </div>
+
+        <div id="documentsList" class="documents-container"></div>
+
+        <div class="pagination">
+          <button id="prevPage" class="admin-btn">← Предыдущая</button>
+          <span id="pageInfo">Страница 1</span>
+          <button id="nextPage" class="admin-btn">Следующая →</button>
+        </div>
+      </section>
+
+      <!-- Statistics -->
+      <section class="admin-section">
+        <h2>Статистика</h2>
+        <div id="statsContainer" class="stats-container"></div>
+      </section>
+    </main>
+
+    <script src="/static/js/admin.js"></script>
+  </body>
+</html>
